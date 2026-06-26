@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<title>TNP AutoFill</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+*{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:#09090b;
+  --surface:#111113;
+  --card:#18181b;
+  --border:#27272a;
+  --border2:#3f3f46;
+  --accent:#6366f1;
+  --accent2:#8b5cf6;
+  --accent-glow:rgba(99,102,241,0.15);
+  --green:#10b981;
+  --red:#ef4444;
+  --yellow:#f59e0b;
+  --text:#fafafa;
+  --text2:#a1a1aa;
+  --text3:#52525b;
+}
+
+body{
+  width:420px;
+  min-height:560px;
+  font-family:'Inter',system-ui,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  overflow-x:hidden;
+}
+
+/* SVG icon helper */
+.ico{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+.ico svg{display:block}
+
+/* HEADER */
+.hdr{
+  padding:14px 18px 12px;
+  background:linear-gradient(135deg,#1a1a2e 0%,#16162a 100%);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:12px;
+  position:relative;overflow:hidden;
+}
+.hdr::before{
+  content:'';position:absolute;top:-30px;right:-30px;
+  width:120px;height:120px;
+  background:radial-gradient(circle,rgba(99,102,241,0.2) 0%,transparent 70%);
+  pointer-events:none;
+}
+.hdr-logo{
+  width:42px;height:42px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+  box-shadow:0 0 20px rgba(99,102,241,0.4);
+}
+.hdr-info h1{font-size:15px;font-weight:800;letter-spacing:-0.3px;color:var(--text)}
+.hdr-info p{font-size:11px;color:var(--text2);margin-top:1px}
+.hdr-badge{
+  margin-left:auto;
+  background:rgba(99,102,241,0.12);
+  border:1px solid rgba(99,102,241,0.3);
+  border-radius:20px;padding:3px 9px;
+  font-size:10px;font-weight:700;color:var(--accent);letter-spacing:0.05em;
+}
+
+/* NAV */
+.nav{
+  display:flex;background:var(--surface);
+  border-bottom:1px solid var(--border);padding:0 6px;gap:2px;
+}
+.nav-tab{
+  flex:1;padding:9px 6px;text-align:center;
+  font-size:11px;font-weight:600;color:var(--text3);
+  cursor:pointer;border-bottom:2px solid transparent;
+  transition:all .2s;letter-spacing:0.02em;white-space:nowrap;
+}
+.nav-tab .ti{display:flex;justify-content:center;margin-bottom:3px}
+.nav-tab.on{color:var(--accent);border-bottom-color:var(--accent)}
+.nav-tab:hover:not(.on){color:var(--text2)}
+
+/* PANELS */
+.panel{display:none;height:490px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+.panel.on{display:block}
+.panel::-webkit-scrollbar{width:4px}
+.panel::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
+/* FILL PANEL */
+.fill-hero{padding:24px 20px 0;text-align:center}
+.fill-orb{
+  width:80px;height:80px;margin:0 auto 16px;
+  background:linear-gradient(135deg,#1a1a3e,#0f0f1e);
+  border-radius:24px;
+  display:flex;align-items:center;justify-content:center;
+  border:1px solid rgba(99,102,241,0.2);
+  box-shadow:0 0 40px rgba(99,102,241,0.15),inset 0 1px 0 rgba(255,255,255,0.05);
+  position:relative;
+}
+.fill-orb::after{
+  content:'';position:absolute;inset:-1px;border-radius:24px;
+  background:linear-gradient(135deg,rgba(99,102,241,0.3),transparent,rgba(139,92,246,0.2));
+  pointer-events:none;
+}
+.fill-title{font-size:18px;font-weight:800;color:var(--text);letter-spacing:-0.5px}
+.fill-sub{font-size:12px;color:var(--text2);margin-top:5px;line-height:1.6;padding:0 10px}
+
+.status-pill{
+  display:inline-flex;align-items:center;gap:7px;
+  padding:7px 14px;border-radius:30px;
+  font-size:12px;font-weight:600;
+  margin:16px auto 0;
+  border:1px solid var(--border);background:var(--card);color:var(--text2);
+}
+.sdot{width:8px;height:8px;border-radius:50%;background:var(--text3);flex-shrink:0}
+.sdot.live{background:var(--green);box-shadow:0 0 8px var(--green)}
+.sdot.warn{background:var(--yellow)}
+
+.pcard{margin:16px 18px 0;background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.pcard-hdr{
+  padding:10px 14px;background:rgba(99,102,241,0.06);
+  border-bottom:1px solid var(--border);
+  font-size:11px;font-weight:700;color:var(--accent);
+  letter-spacing:0.06em;text-transform:uppercase;
+  display:flex;align-items:center;gap:8px;
+}
+.pcard-rows{padding:6px 0}
+.prow{display:flex;justify-content:space-between;align-items:center;padding:7px 14px;font-size:12px;border-bottom:1px solid rgba(255,255,255,0.03)}
+.prow:last-child{border-bottom:none}
+.pk{color:var(--text3);font-weight:500}
+.pv{color:var(--text);font-weight:600;max-width:200px;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+.no-profile-card{
+  margin:16px 18px 0;padding:18px;
+  background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.2);
+  border-radius:14px;text-align:center;font-size:12.5px;color:var(--yellow);line-height:1.7;
+}
+
+.fill-btn-wrap{padding:16px 18px 20px}
+.btn-fill{
+  width:100%;padding:14px;
+  background:linear-gradient(135deg,var(--green),#059669);
+  border:none;border-radius:12px;
+  font-size:14px;font-weight:800;color:#fff;cursor:pointer;
+  letter-spacing:-0.2px;
+  display:flex;align-items:center;justify-content:center;gap:9px;
+  transition:transform .15s,box-shadow .15s,opacity .2s;
+  box-shadow:0 4px 20px rgba(16,185,129,0.3);
+}
+.btn-fill:not(:disabled):hover{transform:translateY(-1px);box-shadow:0 6px 28px rgba(16,185,129,0.4)}
+.btn-fill:not(:disabled):active{transform:translateY(0)}
+.btn-fill:disabled{opacity:.4;cursor:not-allowed;box-shadow:none}
+.fill-result{text-align:center;font-size:12px;color:var(--text3);margin-top:8px;min-height:18px;transition:color .3s}
+.fill-result.good{color:var(--green)}
+.fill-result.bad{color:var(--red)}
+
+/* PROFILE PANEL */
+.profile-body{padding:14px 16px 20px}
+
+.section-hdr{display:flex;align-items:center;gap:10px;margin:18px 0 10px}
+.section-hdr:first-child{margin-top:0}
+.sh-icon{
+  width:28px;height:28px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.sh-label{font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.08em}
+.sh-line{flex:1;height:1px;background:var(--border)}
+
+.row2{display:flex;gap:8px}
+.row2 .fld{flex:1}
+
+.fld{margin-bottom:8px}
+.fld label{display:block;font-size:11px;font-weight:600;color:var(--text3);margin-bottom:4px;letter-spacing:0.02em}
+.fld input,.fld select,.fld textarea{
+  width:100%;background:var(--card);border:1px solid var(--border);
+  border-radius:9px;padding:9px 11px;
+  font-size:12.5px;color:var(--text);outline:none;font-family:inherit;
+  transition:border-color .2s,background .2s;appearance:none;
+}
+.fld input:focus,.fld select:focus,.fld textarea:focus{border-color:var(--accent);background:#16162e}
+.fld input::placeholder{color:var(--text3)}
+.fld textarea{resize:vertical;min-height:64px}
+.fld select{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2352525b' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 10px center;padding-right:28px;
+}
+.fld select option{background:var(--card)}
+
+/* Chips */
+.chip-input-row{display:flex;gap:6px;margin-bottom:8px}
+.chip-input-row input{flex:1}
+.chip-add{
+  width:38px;height:38px;
+  background:rgba(99,102,241,0.12);border:1px solid rgba(99,102,241,0.25);
+  border-radius:9px;color:var(--accent);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:background .2s;flex-shrink:0;
+}
+.chip-add:hover{background:rgba(99,102,241,0.22)}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.chip{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:4px 10px;
+  background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.2);
+  border-radius:20px;font-size:11.5px;color:#a5b4fc;font-weight:500;
+}
+.chip-x{background:none;border:none;color:var(--text3);cursor:pointer;font-size:14px;line-height:1;padding:0;transition:color .15s}
+.chip-x:hover{color:var(--red)}
+
+/* Rating */
+.rating-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+.rc{
+  padding:5px 13px;border-radius:8px;border:1px solid var(--border);
+  background:var(--card);font-size:12px;font-weight:600;color:var(--text3);cursor:pointer;transition:all .15s;
+}
+.rc.sel{background:rgba(99,102,241,0.15);border-color:var(--accent);color:var(--accent)}
+.rc:hover:not(.sel){border-color:var(--border2);color:var(--text2)}
+
+/* Toggle chips */
+.toggle-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px}
+.tc{
+  padding:5px 12px;border-radius:8px;border:1px solid var(--border);
+  background:var(--card);font-size:11.5px;font-weight:500;color:var(--text3);cursor:pointer;transition:all .15s;
+}
+.tc.sel{background:rgba(99,102,241,0.12);border-color:rgba(99,102,241,0.35);color:#a5b4fc}
+.tc:hover:not(.sel){color:var(--text2);border-color:var(--border2)}
+
+/* YN */
+.yn-wrap{display:flex;gap:6px;margin-top:4px}
+.yn{
+  flex:1;padding:8px;border-radius:9px;border:1px solid var(--border);
+  background:var(--card);font-size:13px;font-weight:600;color:var(--text3);
+  cursor:pointer;text-align:center;transition:all .15s;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.yn.yes.sel{background:rgba(16,185,129,0.1);border-color:var(--green);color:var(--green)}
+.yn.no.sel{background:rgba(239,68,68,0.1);border-color:var(--red);color:var(--red)}
+.yn:hover:not(.sel){color:var(--text2);border-color:var(--border2)}
+
+/* Save */
+.btn-save{
+  width:100%;padding:13px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  border:none;border-radius:12px;font-size:14px;font-weight:800;color:#fff;cursor:pointer;
+  margin-top:20px;display:flex;align-items:center;justify-content:center;gap:8px;
+  letter-spacing:-0.2px;transition:transform .15s,box-shadow .15s;
+  box-shadow:0 4px 20px rgba(99,102,241,0.3);
+}
+.btn-save:hover{transform:translateY(-1px);box-shadow:0 6px 28px rgba(99,102,241,0.4)}
+.btn-save:active{transform:translateY(0)}
+
+/* CUSTOM FIELDS */
+.custom-body{padding:14px 16px 20px}
+.custom-intro{
+  background:rgba(99,102,241,0.06);border:1px solid rgba(99,102,241,0.15);
+  border-radius:12px;padding:12px 14px;font-size:12px;color:var(--text2);line-height:1.7;margin-bottom:16px;
+}
+.custom-intro strong{color:var(--accent)}
+
+.custom-list{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+.cf-item{
+  background:var(--card);border:1px solid var(--border);border-radius:10px;
+  padding:10px 12px;display:flex;align-items:center;gap:10px;
+}
+.cf-info{flex:1;min-width:0}
+.cf-name{font-size:12.5px;font-weight:600;color:var(--text);margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cf-val{font-size:11px;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cf-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:6px;background:rgba(99,102,241,0.1);color:var(--accent);white-space:nowrap;flex-shrink:0}
+.cf-del{background:none;border:none;color:var(--text3);cursor:pointer;display:flex;align-items:center;transition:color .15s;flex-shrink:0;padding:2px}
+.cf-del:hover{color:var(--red)}
+
+.add-cf-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px}
+.add-cf-title{font-size:12px;font-weight:700;color:var(--text2);margin-bottom:12px;text-transform:uppercase;letter-spacing:0.06em}
+.type-pills{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px}
+.tp{
+  padding:5px 11px;border-radius:8px;border:1px solid var(--border);
+  background:var(--bg);font-size:11px;font-weight:600;color:var(--text3);cursor:pointer;transition:all .15s;
+}
+.tp.sel{background:rgba(99,102,241,0.1);border-color:rgba(99,102,241,0.3);color:var(--accent)}
+
+.btn-add-cf{
+  width:100%;padding:10px;
+  background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.25);
+  border-radius:9px;font-size:13px;font-weight:700;color:var(--accent);cursor:pointer;
+  margin-top:10px;display:flex;align-items:center;justify-content:center;gap:6px;
+  transition:background .2s;
+}
+.btn-add-cf:hover{background:rgba(99,102,241,0.18)}
+
+/* GOOGLE FORMS STYLE BUILDER */
+.custom-body{padding:14px 16px 20px}
+.custom-intro{
+  background:rgba(99,102,241,0.06);border:1px solid rgba(99,102,241,0.15);
+  border-radius:12px;padding:12px 14px;font-size:12px;color:var(--text2);line-height:1.7;margin-bottom:16px;
+}
+.custom-intro strong{color:var(--accent)}
+
+.custom-list{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+
+/* Saved field card */
+.cf-item{
+  background:var(--card);border:1px solid var(--border);border-radius:10px;
+  padding:10px 12px;display:flex;align-items:center;gap:10px;
+}
+.cf-info{flex:1;min-width:0}
+.cf-name{font-size:12.5px;font-weight:600;color:var(--text);margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cf-val{font-size:11px;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cf-type-badge{
+  font-size:10px;font-weight:700;padding:2px 8px;border-radius:6px;
+  background:rgba(99,102,241,0.1);color:var(--accent);white-space:nowrap;flex-shrink:0;
+  display:flex;align-items:center;gap:4px;
+}
+.cf-del{background:none;border:none;color:var(--text3);cursor:pointer;display:flex;align-items:center;transition:color .15s;flex-shrink:0;padding:2px}
+.cf-del:hover{color:var(--red)}
+
+/* GF BUILDER CARD */
+.gf-builder{position:relative}
+.gf-card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:14px;
+  overflow:visible;
+  position:relative;
+}
+.gf-card::before{
+  content:'';
+  position:absolute;left:0;top:0;bottom:0;
+  width:4px;
+  background:linear-gradient(180deg,var(--accent),var(--accent2));
+  border-radius:14px 0 0 14px;
+}
+
+.gf-card-topbar{
+  padding:12px 14px 8px 18px;
+  display:flex;align-items:center;gap:8px;
+  border-bottom:1px solid var(--border);
+}
+.gf-card-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0}
+.gf-card-label{font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.07em}
+
+/* Question row */
+.gf-question-row{
+  display:flex;align-items:center;gap:8px;
+  padding:12px 14px 8px;
+}
+.gf-question-input{
+  flex:1;
+  background:transparent;
+  border:none;
+  border-bottom:2px solid var(--border2);
+  border-radius:0;
+  padding:6px 0;
+  font-size:14px;font-weight:600;color:var(--text);
+  font-family:inherit;outline:none;
+  transition:border-color .2s;
+}
+.gf-question-input:focus{border-bottom-color:var(--accent)}
+.gf-question-input::placeholder{color:var(--text3);font-weight:400}
+
+/* Type selector */
+.gf-type-select{
+  display:flex;align-items:center;gap:6px;
+  background:var(--surface);
+  border:1px solid var(--border2);
+  border-radius:8px;
+  padding:7px 10px;
+  font-size:12px;font-weight:600;color:var(--text2);
+  cursor:pointer;white-space:nowrap;
+  transition:border-color .2s,color .2s;
+  flex-shrink:0;
+  position:relative;
+  user-select:none;
+}
+.gf-type-select:hover{border-color:var(--accent);color:var(--text)}
+
+/* Type dropdown menu */
+.gf-type-menu{
+  position:absolute;right:14px;top:54px;
+  background:#1e1e24;
+  border:1px solid var(--border2);
+  border-radius:12px;
+  padding:6px;
+  z-index:100;
+  min-width:180px;
+  box-shadow:0 8px 32px rgba(0,0,0,0.5);
+}
+.gf-type-option{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 12px;
+  border-radius:8px;
+  font-size:12.5px;font-weight:500;color:var(--text2);
+  cursor:pointer;
+  transition:background .15s,color .15s;
+}
+.gf-type-option:hover,.gf-type-option.sel{
+  background:rgba(99,102,241,0.12);color:var(--text);
+}
+.gf-type-option.sel{color:var(--accent)}
+
+/* Answer preview area */
+.gf-answer-area{padding:4px 14px 0}
+.gf-preview-short{
+  width:60%;
+  border:none;border-bottom:1px dashed var(--border2);
+  background:transparent;padding:6px 0;
+  font-size:12px;color:var(--text3);font-family:inherit;outline:none;
+  pointer-events:none;
+}
+.gf-preview-para{
+  width:100%;
+  border:none;border-bottom:1px dashed var(--border2);
+  background:transparent;padding:6px 0;
+  font-size:12px;color:var(--text3);font-family:inherit;outline:none;
+  pointer-events:none;resize:none;
+}
+.gf-preview-date,.gf-preview-time{
+  font-size:12px;color:var(--text3);
+  padding:6px 0;display:flex;align-items:center;gap:8px;
+}
+
+/* Options (radio/checkbox/dropdown) */
+.gf-options-area{padding:4px 14px 0}
+.gf-options-list{display:flex;flex-direction:column;gap:2px}
+.gf-option-item{
+  display:flex;align-items:center;gap:8px;
+  padding:5px 0;
+}
+.gf-option-icon{flex-shrink:0;color:var(--text3)}
+.gf-option-input{
+  flex:1;background:transparent;border:none;
+  border-bottom:1px solid var(--border);
+  padding:4px 0;font-size:12.5px;color:var(--text);
+  font-family:inherit;outline:none;
+  transition:border-color .2s;
+}
+.gf-option-input:focus{border-bottom-color:var(--accent)}
+.gf-option-input::placeholder{color:var(--text3)}
+.gf-option-del{
+  background:none;border:none;color:var(--text3);
+  cursor:pointer;padding:2px;
+  display:flex;align-items:center;
+  transition:color .15s;flex-shrink:0;
+}
+.gf-option-del:hover{color:var(--red)}
+.gf-add-option-btn{
+  display:flex;align-items:center;gap:6px;
+  background:none;border:none;
+  color:var(--text3);font-size:12px;font-weight:500;font-family:inherit;
+  cursor:pointer;padding:8px 0 4px;
+  transition:color .2s;
+}
+.gf-add-option-btn:hover{color:var(--accent)}
+
+/* Your answer row */
+.gf-your-answer-row{
+  margin:10px 14px 0;
+  padding:10px 12px;
+  background:rgba(99,102,241,0.04);
+  border:1px solid rgba(99,102,241,0.12);
+  border-radius:9px;
+}
+.gf-your-answer-label{
+  font-size:10px;font-weight:700;color:var(--accent);
+  text-transform:uppercase;letter-spacing:0.07em;margin-bottom:6px;
+}
+#cf_value_wrap input,
+#cf_value_wrap textarea,
+#cf_value_wrap select{
+  width:100%;background:var(--card);
+  border:1px solid var(--border);border-radius:8px;
+  padding:8px 10px;font-size:12.5px;color:var(--text);
+  font-family:inherit;outline:none;
+  transition:border-color .2s;
+}
+#cf_value_wrap input:focus,
+#cf_value_wrap textarea:focus,
+#cf_value_wrap select:focus{border-color:var(--accent)}
+#cf_value_wrap textarea{resize:vertical;min-height:60px}
+
+/* Card footer */
+.gf-card-footer{
+  padding:12px 14px;
+  border-top:1px solid var(--border);
+  margin-top:12px;
+  display:flex;justify-content:flex-end;
+}
+.gf-save-btn{
+  display:flex;align-items:center;gap:7px;
+  padding:9px 18px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  border:none;border-radius:9px;
+  font-size:13px;font-weight:700;color:#fff;
+  cursor:pointer;
+  transition:opacity .2s,transform .15s;
+  box-shadow:0 3px 14px rgba(99,102,241,0.3);
+}
+.gf-save-btn:hover{opacity:.9;transform:translateY(-1px)}
+.gf-save-btn:active{transform:translateY(0)}
+
+.cf-empty{text-align:center;color:var(--text3);font-size:12px;padding:16px 0}
+
+/* Auto-save badge */
+.autosave-badge{
+  position:fixed;bottom:16px;right:16px;
+  background:rgba(16,185,129,0.15);
+  border:1px solid rgba(16,185,129,0.3);
+  border-radius:20px;padding:5px 12px;
+  font-size:11px;font-weight:700;color:var(--green);
+  opacity:0;transform:translateY(6px);
+  transition:opacity .3s,transform .3s;
+  pointer-events:none;z-index:998;
+  display:flex;align-items:center;gap:5px;
+}
+.autosave-badge.show{opacity:1;transform:translateY(0)}
+
+/* College search */
+.college-search-wrap{position:relative}
+.college-search-input{
+  width:100%;background:var(--card);border:1px solid var(--border);
+  border-radius:9px;padding:9px 11px;font-size:12.5px;color:var(--text);
+  font-family:inherit;outline:none;transition:border-color .2s;
+}
+.college-search-input:focus{border-color:var(--accent);background:#16162e}
+.college-search-input::placeholder{color:var(--text3)}
+.college-dropdown{
+  position:absolute;top:calc(100% + 4px);left:0;right:0;
+  background:#1e1e24;border:1px solid var(--border2);
+  border-radius:10px;max-height:180px;overflow-y:auto;
+  z-index:200;box-shadow:0 8px 24px rgba(0,0,0,0.5);
+  scrollbar-width:thin;scrollbar-color:var(--border) transparent;
+}
+.college-dropdown::-webkit-scrollbar{width:4px}
+.college-dropdown::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+.college-option{
+  padding:9px 12px;font-size:12px;color:var(--text2);cursor:pointer;
+  transition:background .15s,color .15s;
+  border-bottom:1px solid rgba(255,255,255,0.03);
+}
+.college-option:last-child{border-bottom:none}
+.college-option:hover{background:rgba(99,102,241,0.12);color:var(--text)}
+.college-option mark{background:none;color:var(--accent);font-weight:700}
+.college-selected{
+  margin-top:6px;display:flex;align-items:center;gap:8px;
+  background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);
+  border-radius:8px;padding:7px 10px;
+}
+.college-selected span{flex:1;font-size:12px;color:#a5b4fc;font-weight:500}
+.college-clear{
+  background:none;border:none;color:var(--text3);cursor:pointer;
+  display:flex;align-items:center;transition:color .15s;flex-shrink:0;
+}
+.college-clear:hover{color:var(--red)}
+
+/* TOAST */
+.toast{
+  position:fixed;bottom:16px;left:50%;
+  transform:translateX(-50%) translateY(10px);
+  padding:9px 20px;border-radius:30px;font-size:12.5px;font-weight:700;
+  color:#fff;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap;z-index:999;
+}
+.toast.ok{background:linear-gradient(135deg,var(--green),#059669)}
+.toast.err{background:linear-gradient(135deg,var(--red),#dc2626)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hdr-logo">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M13 2L4.5 13.5H11L10 22L20.5 10H14L13 2Z" fill="white" stroke="white" stroke-width="1.5" stroke-linejoin="round"/>
+    </svg>
+  </div>
+  <div class="hdr-info">
+    <h1>TNP AutoFill</h1>
+    <p>Campus Placement Form Assistant</p>
+  </div>
+  <div class="hdr-badge">v2.0</div>
+</div>
+
+<!-- NAV -->
+<div class="nav">
+  <div class="nav-tab on" data-tab="fill">
+    <div class="ti">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+      </svg>
+    </div>
+    Fill Form
+  </div>
+  <div class="nav-tab" data-tab="profile">
+    <div class="ti">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+      </svg>
+    </div>
+    Profile
+  </div>
+  <div class="nav-tab" data-tab="custom">
+    <div class="ti">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+    </div>
+    My Fields
+  </div>
+</div>
+
+<!-- FILL PANEL -->
+<div class="panel on" id="panel-fill">
+  <div class="fill-hero">
+    <div class="fill-orb">
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M13 2L4.5 13.5H11L10 22L20.5 10H14L13 2Z" fill="#6366f1" stroke="#8b5cf6" stroke-width="1.2" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div class="fill-title">One-Click Form Fill</div>
+    <div class="fill-sub">Open any TNP Google Form, click the button below — every matching field fills instantly.</div>
+    <div class="status-pill">
+      <div class="sdot" id="sdot"></div>
+      <span id="stext">Checking page...</span>
+    </div>
+  </div>
+
+  <div id="pcard-wrap"></div>
+  <div id="no-profile-wrap" style="display:none" class="no-profile-card">
+    No profile saved yet.<br/><strong>Go to Profile tab</strong> and fill your details first.
+  </div>
+
+  <div class="fill-btn-wrap">
+    <button class="btn-fill" id="fillBtn"  disabled>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+      </svg>
+      Fill This Form Now
+    </button>
+    <div class="fill-result" id="fillResult"></div>
+  </div>
+</div>
+
+<!-- PROFILE PANEL -->
+<div class="panel" id="panel-profile">
+<div class="profile-body">
+
+  <!-- Personal -->
+  <div class="section-hdr">
+    <div class="sh-icon" style="background:rgba(99,102,241,0.1)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+      </svg>
+    </div>
+    <span class="sh-label">Personal Info</span>
+    <div class="sh-line"></div>
+  </div>
+
+  <div class="row2">
+    <div class="fld"><label>First Name</label><input id="p_firstName" placeholder="Your first name"/></div>
+    <div class="fld"><label>Last Name</label><input id="p_lastName" placeholder="Your last name"/></div>
+  </div>
+  <div class="fld"><label>Full Name (as in marksheet)</label><input id="p_fullName" placeholder="As on official documents"/></div>
+  <div class="fld"><label>Email Address</label><input type="email" id="p_email" placeholder="yourname@gmail.com"/></div>
+  <div class="row2">
+    <div class="fld"><label>Mobile (10 digits, no +91)</label><input type="tel" id="p_phone" placeholder="10-digit number" maxlength="10"/></div>
+    <div class="fld"><label>Date of Birth</label><input type="date" id="p_dob"/></div>
+  </div>
+  <div class="fld">
+    <label>Gender</label>
+    <div class="toggle-chips" id="tc_gender">
+      <div class="tc" data-val="Male">Male</div>
+      <div class="tc" data-val="Female">Female</div>
+      <div class="tc" data-val="Other">Other</div>
+    </div>
+  </div>
+
+  <!-- Academic -->
+  <div class="section-hdr">
+    <div class="sh-icon" style="background:rgba(139,92,246,0.1)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>
+      </svg>
+    </div>
+    <span class="sh-label">Academic Details</span>
+    <div class="sh-line"></div>
+  </div>
+
+  <div class="row2">
+    <div class="fld"><label>University PRN Number</label><input id="p_prn" placeholder="Your PRN"/></div>
+    <div class="fld"><label>Enrollment No.</label><input id="p_enrollment" placeholder="Enrollment number"/></div>
+  </div>
+  <div class="fld">
+    <label>Degree</label>
+    <div class="toggle-chips" id="tc_degree">
+      <div class="tc" data-val="BE">BE</div>
+      <div class="tc" data-val="BTech">BTech</div>
+      <div class="tc" data-val="MTech">MTech</div>
+      <div class="tc" data-val="MCA">MCA</div>
+    </div>
+  </div>
+  <div class="fld">
+    <label>Specialization</label>
+    <div class="toggle-chips" id="tc_specialization">
+      <div class="tc" data-val="CS">CS</div>
+      <div class="tc" data-val="IT">IT</div>
+      <div class="tc" data-val="MCA">MCA</div>
+      <div class="tc" data-val="ENTC">ENTC</div>
+      <div class="tc" data-val="Mechanical">Mech</div>
+      <div class="tc" data-val="Civil">Civil</div>
+    </div>
+  </div>
+  <div class="fld">
+    <label>College</label>
+    <div class="college-search-wrap">
+      <input id="college_search" class="college-search-input" placeholder="Search college name, city or state..." autocomplete="off"/>
+      <div class="college-dropdown" id="college_dropdown" style="display:none"></div>
+    </div>
+    <div class="college-selected" id="college_selected" style="display:none">
+      <span id="college_selected_text"></span>
+      <button class="college-clear" id="college_clear_btn">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+  </div>
+  <div class="row2">
+    <div class="fld"><label>Division</label><input id="p_division" placeholder="A"/></div>
+    <div class="fld"><label>Year of Graduation</label>
+      <select id="p_batch">
+        <option value="">Select</option>
+        <option>2025</option><option>2026</option><option>2027</option><option>2028</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Marks -->
+  <div class="section-hdr">
+    <div class="sh-icon" style="background:rgba(16,185,129,0.1)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+      </svg>
+    </div>
+    <span class="sh-label">Academic Marks</span>
+    <div class="sh-line"></div>
+  </div>
+
+  <div class="row2">
+    <div class="fld"><label>10th %</label><input id="p_tenth" placeholder="91.2"/></div>
+    <div class="fld"><label>12th % / Diploma %</label><input id="p_twelfth" placeholder="87.5"/></div>
+  </div>
+  <div class="fld">
+    <label>Previous Degree Completed</label>
+    <div class="toggle-chips" id="tc_prevDegree">
+      <div class="tc" data-val="12th">12th</div>
+      <div class="tc" data-val="Diploma">Diploma</div>
+    </div>
+  </div>
+  <div class="row2">
+    <div class="fld"><label>BE / BTech %</label><input id="p_bepercent" placeholder="75.5"/></div>
+    <div class="fld"><label>CGPA / CPI</label><input id="p_cgpa" placeholder="8.5"/></div>
+  </div>
+  <div class="fld"><label>Post Graduation % (if any)</label><input id="p_pgpercent" placeholder="Leave blank if not applicable"/></div>
+
+  <!-- Skills -->
+  <div class="section-hdr">
+    <div class="sh-icon" style="background:rgba(245,158,11,0.1)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+      </svg>
+    </div>
+    <span class="sh-label">Skill Sets</span>
+    <div class="sh-line"></div>
+  </div>
+
+  <div class="fld">
+    <label>Primary Skill (TNP Drive)</label>
+    <div class="toggle-chips" id="tc_skillset">
+      <div class="tc" data-val="Java">Java</div>
+      <div class="tc" data-val="Python">Python</div>
+      <div class="tc" data-val="Business Analyst">Business Analyst</div>
+      <div class="tc" data-val="Application Support">App Support</div>
+      <div class="tc" data-val="DevOps">DevOps</div>
+      <div class="tc" data-val="SDET/Testing">SDET/Testing</div>
+      <div class="tc" data-val=".NET">.NET</div>
+    </div>
+  </div>
+  <div class="fld">
+    <label>Additional Technical Skills</label>
+    <div class="chip-input-row">
+      <input id="skillInput" placeholder="e.g. React, SQL, Docker" onkeydown="if(event.key==='Enter'){event.preventDefault();addSkill()}"/>
+      <button class="chip-add" id="skillAddBtn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+      </button>
+    </div>
+    <div class="chips" id="skillChips"></div>
+  </div>
+
+  <!-- Certifications -->
+  <div class="section-hdr">
+    <div class="sh-icon" style="background:rgba(239,68,68,0.1)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/>
+      </svg>
+    </div>
+    <span class="sh-label">Certifications</span>
+    <div class="sh-line"></div>
+  </div>
+
+  <div class="fld">
+    <label>Have Technical Certifications?</label>
+    <div class="yn-wrap">
+      <div class="yn yes" id="yn_yes" >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        Yes
+      </div>
+      <div class="yn no sel" id="yn_no" >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        No
+      </div>
+    </div>
+  </div>
+  <div id="cert_fields" style="display:none">
+    <div class="fld"><label>Platform / Agency (e.g. Udemy)</label><input id="p_certPlatform" placeholder="Udemy, Coursera, NPTEL..."/></div>
+    <div class="fld"><label>Duration in hours (e.g. 40)</label><input id="p_certHours" placeholder="40"/></div>
+  </div>
+
+  <!-- Coding -->
+  <div class="section-hdr">
+    <div class="sh-icon" style="background:rgba(6,182,212,0.1)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>
+      </svg>
+    </div>
+    <span class="sh-label">Coding Profiles</span>
+    <div class="sh-line"></div>
+  </div>
+
+  <div class="fld">
+    <label>CodeChef Rating (stars)</label>
+    <div class="rating-chips" id="rc_codechef">
+      <div class="rc" data-val="0">0</div>
+      <div class="rc" data-val="1">1 Star</div>
+      <div class="rc" data-val="2">2 Star</div>
+      <div class="rc" data-val="3">3 Star</div>
+      <div class="rc" data-val="4">4 Star</div>
+      <div class="rc" data-val="5">5 Star</div>
+    </div>
+  </div>
+  <div class="fld"><label>CodeChef Profile Link</label><input id="p_codechefUrl" placeholder="codechef.com/users/username"/></div>
+
+  <div class="fld">
+    <label>HackerRank Star Rating</label>
+    <div class="rating-chips" id="rc_hackerrank">
+      <div class="rc" data-val="0">0</div>
+      <div class="rc" data-val="1">1 Star</div>
+      <div class="rc" data-val="2">2 Star</div>
+      <div class="rc" data-val="3">3 Star</div>
+      <div class="rc" data-val="4">4 Star</div>
+      <div class="rc" data-val="5">5 Star</div>
+    </div>
+  </div>
+  <div class="fld"><label>HackerRank Profile Link</label><input id="p_hackerrankUrl" placeholder="hackerrank.com/username"/></div>
+
+  <div class="row2">
+    <div class="fld"><label>LeetCode Problems Solved</label><input id="p_leetcode" placeholder="0"/></div>
+    <div class="fld"><label>CoCubes Score (out of 800)</label><input id="p_cocubes" placeholder="0"/></div>
+  </div>
+  <div class="fld"><label>LeetCode Profile Link</label><input id="p_leetcodeUrl" placeholder="leetcode.com/u/username"/></div>
+
+  <!-- Links -->
+  <div class="section-hdr">
+    <div class="sh-icon" style="background:rgba(168,85,247,0.1)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+      </svg>
+    </div>
+    <span class="sh-label">Links</span>
+    <div class="sh-line"></div>
+  </div>
+
+  <div class="fld"><label>GitHub Profile</label><input id="p_github" placeholder="github.com/username"/></div>
+  <div class="fld"><label>LinkedIn Profile</label><input id="p_linkedin" placeholder="linkedin.com/in/username"/></div>
+
+  <!-- Achievements -->
+  <div class="section-hdr">
+    <div class="sh-icon" style="background:rgba(251,191,36,0.1)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+      </svg>
+    </div>
+    <span class="sh-label">Achievements & Projects</span>
+    <div class="sh-line"></div>
+  </div>
+
+  <div class="fld"><label>Technical Achievements</label><textarea id="p_techAchiev" placeholder="Hackathon wins, open source, research papers..."></textarea></div>
+  <div class="fld"><label>Personal Achievements</label><textarea id="p_persAchiev" placeholder="Sports, NCC, NSS, leadership roles..."></textarea></div>
+  <div class="fld"><label>Project Description (Java / Python / .NET etc.)</label><textarea id="p_projects" placeholder="Brief description of your main project..."></textarea></div>
+
+  <!-- Other -->
+  <div class="section-hdr">
+    <div class="sh-icon" style="background:rgba(100,116,139,0.1)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+    </div>
+    <span class="sh-label">Other Details</span>
+    <div class="sh-line"></div>
+  </div>
+
+  <div class="fld"><label>City / Address</label><input id="p_address" placeholder="Your city, state"/></div>
+  <div class="fld">
+    <label>Active Backlogs</label>
+    <div class="toggle-chips" id="tc_backlogs">
+      <div class="tc" data-val="0">0</div>
+      <div class="tc" data-val="1">1</div>
+      <div class="tc" data-val="2">2</div>
+      <div class="tc" data-val="3">3</div>
+      <div class="tc" data-val="4">4</div>
+      <div class="tc" data-val="5+">5+</div>
+    </div>
+  </div>
+
+  <button class="btn-save" id="saveProfileBtn">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+      <polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>
+    </svg>
+    Save My Profile
+  </button>
+</div>
+</div>
+
+<!-- CUSTOM FIELDS PANEL -->
+<div class="panel" id="panel-custom">
+<div class="custom-body">
+
+  <div class="custom-intro">
+    <strong>Add extra fields</strong> exactly like a Google Form question — choose the question type, write your answer. These fields will be auto-matched and filled in any TNP drive form.
+  </div>
+
+  <!-- Saved custom fields list -->
+  <div class="custom-list" id="customList"></div>
+
+  <!-- Google-Forms-style field builder -->
+  <div class="gf-builder" id="gf-builder">
+
+    <!-- Step 1: Question label -->
+    <div class="gf-card">
+      <div class="gf-card-topbar">
+        <div class="gf-card-dot"></div>
+        <span class="gf-card-label">New Question</span>
+      </div>
+
+      <div class="gf-question-row">
+        <input class="gf-question-input" id="cf_label" placeholder="Question (e.g. Aadhar Number)"/>
+        <!-- Question type dropdown -->
+        <div class="gf-type-select" id="gf-type-btn" >
+          <span id="gf-type-label-text">Short answer</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+      </div>
+
+      <!-- Type menu dropdown -->
+      <div class="gf-type-menu" id="gf-type-menu" style="display:none">
+        <div class="gf-type-option sel" data-type="short" >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="12" y2="6"/></svg>
+          Short answer
+        </div>
+        <div class="gf-type-option" data-type="paragraph" >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          Paragraph
+        </div>
+        <div class="gf-type-option" data-type="radio" >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg>
+          Multiple choice
+        </div>
+        <div class="gf-type-option" data-type="checkbox" >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><polyline points="9 12 11 14 15 10"/></svg>
+          Checkboxes
+        </div>
+        <div class="gf-type-option" data-type="dropdown" >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="6" width="18" height="12" rx="2"/><polyline points="9 12 12 15 15 12"/></svg>
+          Dropdown
+        </div>
+        <div class="gf-type-option" data-type="date" >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Date
+        </div>
+        <div class="gf-type-option" data-type="time" >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Time
+        </div>
+        <div class="gf-type-option" data-type="number" >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg>
+          Number
+        </div>
+        <div class="gf-type-option" data-type="url" >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+          Link / URL
+        </div>
+      </div>
+
+      <!-- Answer preview — changes based on type -->
+      <div class="gf-answer-area" id="gf-answer-area">
+        <!-- Rendered by JS based on selected type -->
+      </div>
+
+      <!-- Options area (radio/checkbox/dropdown) -->
+      <div class="gf-options-area" id="gf-options-area" style="display:none">
+        <div class="gf-options-list" id="gf-options-list"></div>
+        <button class="gf-add-option-btn" id="gf-add-option-btn">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add option
+        </button>
+      </div>
+
+      <!-- Your answer row -->
+      <div class="gf-your-answer-row" id="gf-your-answer-row">
+        <div class="gf-your-answer-label">Your answer</div>
+        <div id="cf_value_wrap"></div>
+      </div>
+
+      <!-- Bottom bar -->
+      <div class="gf-card-footer">
+        <button class="gf-save-btn" id="gf-save-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+          Save Field
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+</div>
+
+<div class="autosave-badge" id="autosave-badge">
+  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+  Saved
+</div>
+<div class="toast" id="toast"></div>
+<script src="popup.js"></script>
+</body>
+</html>

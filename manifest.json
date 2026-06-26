@@ -1,10 +1,16 @@
 {
   "manifest_version": 3,
   "name": "TNP AutoFill",
-  "version": "2.0",
+  "version": "1.0",
   "description": "Fill any TNP Google Form in one click. Save your profile, auto-fill every drive instantly.",
-  "permissions": ["storage", "activeTab", "scripting"],
-  "host_permissions": ["https://docs.google.com/forms/*"],
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://docs.google.com/forms/*"
+  ],
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
@@ -14,8 +20,12 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://docs.google.com/forms/*"],
-      "js": ["content.js"],
+      "matches": [
+        "https://docs.google.com/forms/*"
+      ],
+      "js": [
+        "content.js"
+      ],
       "run_at": "document_idle"
     }
   ],

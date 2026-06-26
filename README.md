@@ -216,34 +216,6 @@ Everything remains on your local Chrome profile.
 
 ---
 
-## 🤝 Contributing
-
-Contributions are welcome!
-
-### 1. Fork the repository
-
-### 2. Create a new branch
-
-```bash
-git checkout -b feature-name
-```
-
-### 3. Commit your changes
-
-```bash
-git commit -m "Added new feature"
-```
-
-### 4. Push your branch
-
-```bash
-git push origin feature-name
-```
-
-### 5. Open a Pull Request
-
----
-
 ## ⭐ Support
 
 If this project helps you, please consider giving it a ⭐ on GitHub.
